@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -408,7 +409,7 @@ namespace System.IO
         /// </summary>
         private void NotifyInternalBufferOverflowEvent()
         {
-            _onErrorHandler?.Invoke(this, new ErrorEventArgs(
+            OnError(new ErrorEventArgs(
                     new InternalBufferOverflowException(SR.Format(SR.FSW_BufferOverflow, _directory))));
         }
 
@@ -417,25 +418,23 @@ namespace System.IO
         /// </summary>
         private void NotifyRenameEventArgs(WatcherChangeTypes action, ReadOnlySpan<char> name, ReadOnlySpan<char> oldName)
         {
-            // filter if there's no handler or neither new name or old name match a specified pattern
-            RenamedEventHandler? handler = _onRenamedHandler;
-            if (handler != null &&
-                (MatchPattern(name) || MatchPattern(oldName)))
+            // filter if neither new name or old name match a specified pattern
+            if (MatchPattern(name) || MatchPattern(oldName))
             {
-                handler(this, new RenamedEventArgs(action, _directory, name.IsEmpty ? null : name.ToString(), oldName.IsEmpty ? null : oldName.ToString()));
+                OnRenamed(new RenamedEventArgs(action, _directory, name.IsEmpty ? null : name.ToString(), oldName.IsEmpty ? null : oldName.ToString()));
             }
         }
 
-        private FileSystemEventHandler? GetHandler(WatcherChangeTypes changeType)
+        private Action<FileSystemEventArgs>? GetRaiser(WatcherChangeTypes changeType)
         {
             switch (changeType)
             {
                 case WatcherChangeTypes.Created:
-                    return _onCreatedHandler;
+                    return OnCreated;
                 case WatcherChangeTypes.Deleted:
-                    return _onDeletedHandler;
+                    return OnDeleted;
                 case WatcherChangeTypes.Changed:
-                    return _onChangedHandler;
+                    return OnChanged;
             }
 
             Debug.Fail("Unknown FileSystemEvent change type!  Value: " + changeType);
@@ -447,11 +446,11 @@ namespace System.IO
         /// </summary>
         private void NotifyFileSystemEventArgs(WatcherChangeTypes changeType, ReadOnlySpan<char> name)
         {
-            FileSystemEventHandler? handler = GetHandler(changeType);
+            Action<FileSystemEventArgs>? raiser = GetRaiser(changeType);
 
-            if (handler != null && MatchPattern(name.IsEmpty ? _directory : name))
+            if (raiser != null && MatchPattern(name.IsEmpty ? _directory : name))
             {
-                handler(this, new FileSystemEventArgs(changeType, _directory, name.IsEmpty ? null : name.ToString()));
+                raiser(new FileSystemEventArgs(changeType, _directory, name.IsEmpty ? null : name.ToString()));
             }
         }
 
@@ -460,11 +459,11 @@ namespace System.IO
         /// </summary>
         private void NotifyFileSystemEventArgs(WatcherChangeTypes changeType, string name)
         {
-            FileSystemEventHandler? handler = GetHandler(changeType);
+            Action<FileSystemEventArgs>? raiser = GetRaiser(changeType);
 
-            if (handler != null && MatchPattern(string.IsNullOrEmpty(name) ? _directory : name))
+            if (raiser != null && MatchPattern(string.IsNullOrEmpty(name) ? _directory : name))
             {
-                handler(this, new FileSystemEventArgs(changeType, _directory, name));
+                raiser(new FileSystemEventArgs(changeType, _directory, name));
             }
         }
 

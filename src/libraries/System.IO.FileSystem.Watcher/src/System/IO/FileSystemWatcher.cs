@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -425,16 +424,16 @@ namespace System.IO
             }
         }
 
-        private Action<FileSystemEventArgs>? GetRaiser(WatcherChangeTypes changeType)
+        private FileSystemEventHandler? GetHandler(WatcherChangeTypes changeType)
         {
             switch (changeType)
             {
                 case WatcherChangeTypes.Created:
-                    return OnCreated;
+                    return _onCreatedHandler;
                 case WatcherChangeTypes.Deleted:
-                    return OnDeleted;
+                    return _onDeletedHandler;
                 case WatcherChangeTypes.Changed:
-                    return OnChanged;
+                    return _onChangedHandler;
             }
 
             Debug.Fail("Unknown FileSystemEvent change type!  Value: " + changeType);
@@ -446,11 +445,11 @@ namespace System.IO
         /// </summary>
         private void NotifyFileSystemEventArgs(WatcherChangeTypes changeType, ReadOnlySpan<char> name)
         {
-            Action<FileSystemEventArgs>? raiser = GetRaiser(changeType);
+            FileSystemEventHandler? handler = GetHandler(changeType);
 
-            if (raiser != null && MatchPattern(name.IsEmpty ? _directory : name))
+            if (MatchPattern(name.IsEmpty ? _directory : name))
             {
-                raiser(new FileSystemEventArgs(changeType, _directory, name.IsEmpty ? null : name.ToString()));
+                InvokeOn(new FileSystemEventArgs(changeType, _directory, name.IsEmpty ? null : name.ToString()), handler);
             }
         }
 
@@ -459,11 +458,11 @@ namespace System.IO
         /// </summary>
         private void NotifyFileSystemEventArgs(WatcherChangeTypes changeType, string name)
         {
-            Action<FileSystemEventArgs>? raiser = GetRaiser(changeType);
+            FileSystemEventHandler? handler = GetHandler(changeType);
 
-            if (raiser != null && MatchPattern(string.IsNullOrEmpty(name) ? _directory : name))
+            if (MatchPattern(string.IsNullOrEmpty(name) ? _directory : name))
             {
-                raiser(new FileSystemEventArgs(changeType, _directory, name));
+                InvokeOn(new FileSystemEventArgs(changeType, _directory, name), handler);
             }
         }
 

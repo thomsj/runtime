@@ -408,8 +408,11 @@ namespace System.IO
         /// </summary>
         private void NotifyInternalBufferOverflowEvent()
         {
-            OnError(new ErrorEventArgs(
-                    new InternalBufferOverflowException(SR.Format(SR.FSW_BufferOverflow, _directory))));
+            if (_onErrorHandler != null)
+            {
+                OnError(new ErrorEventArgs(
+                        new InternalBufferOverflowException(SR.Format(SR.FSW_BufferOverflow, _directory))));
+            }
         }
 
         /// <summary>
@@ -417,8 +420,9 @@ namespace System.IO
         /// </summary>
         private void NotifyRenameEventArgs(WatcherChangeTypes action, ReadOnlySpan<char> name, ReadOnlySpan<char> oldName)
         {
-            // filter if neither new name or old name match a specified pattern
-            if (MatchPattern(name) || MatchPattern(oldName))
+            // filter if there's no handler or neither new name or old name match a specified pattern
+            if (_onRenamedHandler != null &&
+                (MatchPattern(name) || MatchPattern(oldName)))
             {
                 OnRenamed(new RenamedEventArgs(action, _directory, name.IsEmpty ? null : name.ToString(), oldName.IsEmpty ? null : oldName.ToString()));
             }
@@ -447,7 +451,7 @@ namespace System.IO
         {
             FileSystemEventHandler? handler = GetHandler(changeType);
 
-            if (MatchPattern(name.IsEmpty ? _directory : name))
+            if (handler != null && MatchPattern(name.IsEmpty ? _directory : name))
             {
                 InvokeOn(new FileSystemEventArgs(changeType, _directory, name.IsEmpty ? null : name.ToString()), handler);
             }
@@ -460,7 +464,7 @@ namespace System.IO
         {
             FileSystemEventHandler? handler = GetHandler(changeType);
 
-            if (MatchPattern(string.IsNullOrEmpty(name) ? _directory : name))
+            if (handler != null && MatchPattern(string.IsNullOrEmpty(name) ? _directory : name))
             {
                 InvokeOn(new FileSystemEventArgs(changeType, _directory, name), handler);
             }

@@ -85,7 +85,7 @@ namespace System.IO.Tests
         }
 
         /// <summary>
-        /// Ensure that the SynchronizeObject is invoked when an event occurs
+        /// Ensure that the SynchronizingObject is invoked when an event occurs
         /// </summary>
         [Theory]
         [InlineData(WatcherChangeTypes.Changed)]
@@ -102,24 +102,24 @@ namespace System.IO.Tests
                 if (expectedChangeType == WatcherChangeTypes.Created)
                 {
                     watcher.Created += dele;
-                    watcher.CallNotifyFileSystemEventArgs(WatcherChangeTypes.Created, "name");
+                    watcher.CallOnCreated(new FileSystemEventArgs(WatcherChangeTypes.Created, "test", "name"));
                 }
                 else if (expectedChangeType == WatcherChangeTypes.Deleted)
                 {
                     watcher.Deleted += dele;
-                    watcher.CallNotifyFileSystemEventArgs(WatcherChangeTypes.Deleted, "name");
+                    watcher.CallOnDeleted(new FileSystemEventArgs(WatcherChangeTypes.Deleted, "test", "name"));
                 }
                 else if (expectedChangeType == WatcherChangeTypes.Changed)
                 {
                     watcher.Changed += dele;
-                    watcher.CallNotifyFileSystemEventArgs(WatcherChangeTypes.Changed, "name");
+                    watcher.CallOnChanged(new FileSystemEventArgs(WatcherChangeTypes.Changed, "test", "name"));
                 }
                 Assert.True(invoker.BeginInvoke_Called);
             }
         }
 
         /// <summary>
-        /// Ensure that the SynchronizeObject is invoked when a Renamed event occurs
+        /// Ensure that the SynchronizingObject is invoked when a Renamed event occurs
         /// </summary>
         [Fact]
         public void SynchronizingObject_CalledOnRenamed()
@@ -131,25 +131,25 @@ namespace System.IO.Tests
             {
                 watcher.SynchronizingObject = invoker;
                 watcher.Renamed += dele;
-                watcher.CallNotifyRenameEventArgs(WatcherChangeTypes.Renamed, "name", "oldname");
+                watcher.CallOnRenamed(new RenamedEventArgs(WatcherChangeTypes.Renamed, "test", "name", "oldname"));
                 Assert.True(invoker.BeginInvoke_Called);
             }
         }
 
         /// <summary>
-        /// Ensure that the SynchronizeObject is invoked when an Error event occurs
+        /// Ensure that the SynchronizingObject is invoked when an Error event occurs
         /// </summary>
         [Fact]
         public void SynchronizingObject_CalledOnError()
         {
-            ErrorEventHandler dele = (sender, e) => { Assert.IsType<InternalBufferOverflowException>(e.GetException()); };
+            ErrorEventHandler dele = (sender, e) => { Assert.IsType<FileNotFoundException>(e.GetException()); };
             TestISynchronizeInvoke invoker = new TestISynchronizeInvoke() { ExpectedDelegate = dele };
             using (var testDirectory = new TempDirectory(GetTestFilePath()))
             using (var watcher = new TestFileSystemWatcher(testDirectory.Path, "*"))
             {
                 watcher.SynchronizingObject = invoker;
                 watcher.Error += dele;
-                watcher.CallNotifyInternalBufferOverflowEvent();
+                watcher.CallOnError(new ErrorEventArgs(new FileNotFoundException()));
                 Assert.True(invoker.BeginInvoke_Called);
             }
         }

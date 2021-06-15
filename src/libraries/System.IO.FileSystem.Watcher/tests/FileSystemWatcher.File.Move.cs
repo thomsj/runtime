@@ -121,6 +121,29 @@ namespace System.IO.Tests
             FileMove_WithNotifyFilter(WatcherChangeTypes.Renamed);
         }
 
+        [Fact]
+        public void FileSystemWatcher_File_Move_SynchronizingObject()
+        {
+            TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
+            using (var testDirectory = new TempDirectory(GetTestFilePath()))
+            using (var dir = new TempDirectory(Path.Combine(testDirectory.Path, "dir")))
+            using (var testFile = new TempFile(Path.Combine(dir.Path, "file")))
+            using (var watcher = new FileSystemWatcher(dir.Path, "*"))
+            {
+                watcher.SynchronizingObject = invoker;
+
+                string sourcePath = testFile.Path;
+                string targetPath = testFile.Path + "_Renamed";
+
+                // Move the testFile to a different name in the same directory
+                Action action = () => File.Move(sourcePath, targetPath);
+                Action cleanup = () => File.Move(targetPath, sourcePath);
+
+                ExpectEvent(watcher, WatcherChangeTypes.Renamed, action, cleanup, targetPath);
+                Assert.True(invoker.BeginInvoke_Called);
+            }
+        }
+
         #region Test Helpers
 
         private void FileMove_SameDirectory(WatcherChangeTypes eventType)

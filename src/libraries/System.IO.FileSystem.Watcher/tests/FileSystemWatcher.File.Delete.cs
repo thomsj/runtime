@@ -106,5 +106,26 @@ namespace System.IO.Tests
                 ExpectEvent(watcher, WatcherChangeTypes.Deleted, action, cleanup, symLinkPath);
             }
         }
+
+        [Fact]
+        public void FileSystemWatcher_File_Delete_SynchronizingObject()
+        {
+            TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
+            using (var testDirectory = new TempDirectory(GetTestFilePath()))
+            using (var watcher = new FileSystemWatcher(testDirectory.Path))
+            {
+                watcher.SynchronizingObject = invoker;
+
+                string fileName = Path.Combine(testDirectory.Path, "file");
+                watcher.Filter = Path.GetFileName(fileName);
+
+                Action action = () => File.Delete(fileName);
+                Action cleanup = () => File.Create(fileName).Dispose();
+                cleanup();
+
+                ExpectEvent(watcher, WatcherChangeTypes.Deleted, action, cleanup, fileName);
+                Assert.True(invoker.BeginInvoke_Called);
+            }
+        }
     }
 }

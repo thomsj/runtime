@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using Xunit;
@@ -517,7 +518,8 @@ namespace System.IO.Tests
                 IncludeSubdirectories = watcher.IncludeSubdirectories,
                 NotifyFilter = watcher.NotifyFilter,
                 Path = watcher.Path,
-                InternalBufferSize = watcher.InternalBufferSize
+                InternalBufferSize = watcher.InternalBufferSize,
+                SynchronizingObject = watcher.SynchronizingObject,
             };
 
             foreach (string filter in watcher.Filters)
@@ -602,6 +604,26 @@ namespace System.IO.Tests
                     eventsOccured.Set();
                 }
             }
+        }
+
+        internal class TestISynchronizeInvoke : ISynchronizeInvoke
+        {
+            public bool BeginInvoke_Called;
+            public Delegate ExpectedDelegate;
+
+            public IAsyncResult BeginInvoke(Delegate method, object[] args)
+            {
+                if (ExpectedDelegate != null)
+                    Assert.Equal(ExpectedDelegate, method);
+
+                BeginInvoke_Called = true;
+                method.DynamicInvoke(args[0], args[1]);
+                return null;
+            }
+
+            public bool InvokeRequired => true;
+            public object EndInvoke(IAsyncResult result) => null;
+            public object Invoke(Delegate method, object[] args) => null;
         }
     }
 }

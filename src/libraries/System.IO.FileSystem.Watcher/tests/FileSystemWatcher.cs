@@ -52,23 +52,6 @@ namespace System.IO.Tests
             }
         }
 
-        internal class TestISynchronizeInvoke : ISynchronizeInvoke
-        {
-            public bool BeginInvoke_Called;
-            public Delegate ExpectedDelegate;
-
-            public IAsyncResult BeginInvoke(Delegate method, object[] args)
-            {
-                Assert.Equal(ExpectedDelegate, method);
-                BeginInvoke_Called = true;
-                return null;
-            }
-
-            public bool InvokeRequired => true;
-            public object EndInvoke(IAsyncResult result) => null;
-            public object Invoke(Delegate method, object[] args) => null;
-        }
-
         [Fact]
         public void SynchronizingObject_GetSetRoundtrips()
         {

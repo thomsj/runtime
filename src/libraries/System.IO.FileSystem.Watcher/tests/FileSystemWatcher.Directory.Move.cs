@@ -93,6 +93,27 @@ namespace System.IO.Tests
             DirectoryMove_WithNotifyFilter(WatcherChangeTypes.Renamed);
         }
 
+        [Fact]
+        public void FileSystemWatcher_Directory_Move_SynchronizingObject()
+        {
+            TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
+            using (var testDirectory = new TempDirectory(GetTestFilePath()))
+            using (var dir = new TempDirectory(Path.Combine(testDirectory.Path, "dir")))
+            using (var watcher = new FileSystemWatcher(testDirectory.Path))
+            {
+                watcher.SynchronizingObject = invoker;
+
+                string sourcePath = dir.Path;
+                string targetPath = Path.Combine(testDirectory.Path, "target");
+
+                Action action = () => Directory.Move(sourcePath, targetPath);
+                Action cleanup = () => Directory.Move(targetPath, sourcePath);
+
+                ExpectEvent(watcher, WatcherChangeTypes.Renamed, action, cleanup, targetPath);
+                Assert.True(invoker.BeginInvoke_Called);
+            }
+        }
+
         #region Test Helpers
 
         private void DirectoryMove_SameDirectory(WatcherChangeTypes eventType)

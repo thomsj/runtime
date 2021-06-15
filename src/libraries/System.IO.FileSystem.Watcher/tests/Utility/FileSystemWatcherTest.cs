@@ -296,45 +296,41 @@ namespace System.IO.Tests
             // Verify Changed
             if (verifyChanged)
             {
-                bool Changed_expected = ((expectedEvents & WatcherChangeTypes.Changed) > 0);
                 bool Changed_actual = changed.EventOccured.WaitOne(timeout);
                 watcher.Changed -= changed.Handler;
-                result = Changed_expected == Changed_actual;
+                result = Changed_actual;
                 if (assertExpected)
-                    Assert.True(Changed_expected == Changed_actual, "Changed event did not occur as expected");
+                    Assert.True(Changed_actual, "Changed event did not occur as expected");
             }
 
             // Verify Created
             if (verifyCreated)
             {
-                bool Created_expected = ((expectedEvents & WatcherChangeTypes.Created) > 0);
                 bool Created_actual = created.EventOccured.WaitOne(verifyChanged ? SubsequentExpectedWait : timeout);
                 watcher.Created -= created.Handler;
-                result = result && Created_expected == Created_actual;
+                result = result && Created_actual;
                 if (assertExpected)
-                    Assert.True(Created_expected == Created_actual, "Created event did not occur as expected");
+                    Assert.True(Created_actual, "Created event did not occur as expected");
             }
 
             // Verify Deleted
             if (verifyDeleted)
             {
-                bool Deleted_expected = ((expectedEvents & WatcherChangeTypes.Deleted) > 0);
                 bool Deleted_actual = deleted.EventOccured.WaitOne(verifyChanged || verifyCreated ? SubsequentExpectedWait : timeout);
                 watcher.Deleted -= deleted.Handler;
-                result = result && Deleted_expected == Deleted_actual;
+                result = result && Deleted_actual;
                 if (assertExpected)
-                    Assert.True(Deleted_expected == Deleted_actual, "Deleted event did not occur as expected");
+                    Assert.True(Deleted_actual, "Deleted event did not occur as expected");
             }
 
             // Verify Renamed
             if (verifyRenamed)
             {
-                bool Renamed_expected = ((expectedEvents & WatcherChangeTypes.Renamed) > 0);
                 bool Renamed_actual = renamed.EventOccured.WaitOne(verifyChanged || verifyCreated || verifyDeleted ? SubsequentExpectedWait : timeout);
                 watcher.Renamed -= renamed.Handler;
-                result = result && Renamed_expected == Renamed_actual;
+                result = result && Renamed_actual;
                 if (assertExpected)
-                    Assert.True(Renamed_expected == Renamed_actual, "Renamed event did not occur as expected");
+                    Assert.True(Renamed_actual, "Renamed event did not occur as expected");
             }
 
             watcher.EnableRaisingEvents = false;

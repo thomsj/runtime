@@ -203,7 +203,7 @@ namespace System.IO.Tests
         /// <param name="expectedEvents">All of the events that are expected to be raised by this action</param>
         /// <param name="action">The Action that will trigger events.</param>
         /// <param name="cleanup">Optional. Undoes the action and cleans up the watcher so the test may be run again if necessary.</param>
-        /// <param name="expectedPath">Optional. Adds path verification to all expected events.</param>
+        /// <param name="expectedPaths">Optional. Adds path verification to all expected events.</param>
         /// <param name="attempts">Optional. Number of times the test should be executed if it's failing.</param>
         public static void ExpectEvent(FileSystemWatcher watcher, WatcherChangeTypes expectedEvents, Action action, Action cleanup = null, string[] expectedPaths = null, int attempts = DefaultAttemptsForExpectedEvent, int timeout = WaitForExpectedEventTimeout)
         {
@@ -273,7 +273,7 @@ namespace System.IO.Tests
         /// <param name="expectedEvents">All of the events that are expected to be raised by this action</param>
         /// <param name="action">The Action that will trigger events.</param>
         /// <param name="assertExpected">True if results should be asserted. Used if there is no retry.</param>
-        /// <param name="expectedPath"> Adds path verification to all expected events.</param>
+        /// <param name="expectedPaths"> Adds path verification to all expected events.</param>
         /// <returns>True if the events raised correctly; else, false.</returns>
         public static bool ExecuteAndVerifyEvents(FileSystemWatcher watcher, WatcherChangeTypes expectedEvents, Action action, bool assertExpected, string[] expectedPaths, int timeout)
         {

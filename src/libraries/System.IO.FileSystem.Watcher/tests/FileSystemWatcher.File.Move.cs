@@ -122,7 +122,7 @@ namespace System.IO.Tests
         }
 
         [Fact]
-        public void FileSystemWatcher_File_Move_SynchronizingObject()
+        public void File_Move_SynchronizingObject()
         {
             TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
             using (var testDirectory = new TempDirectory(GetTestFilePath()))

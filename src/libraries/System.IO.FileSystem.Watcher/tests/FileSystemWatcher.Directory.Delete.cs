@@ -89,10 +89,10 @@ namespace System.IO.Tests
         [Fact]
         public void FileSystemWatcher_Directory_Delete_SynchronizingObject()
         {
-            TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
             using (var testDirectory = new TempDirectory(GetTestFilePath()))
             using (var watcher = new FileSystemWatcher(testDirectory.Path))
             {
+                TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
                 watcher.SynchronizingObject = invoker;
 
                 string dirName = Path.Combine(testDirectory.Path, "dir");

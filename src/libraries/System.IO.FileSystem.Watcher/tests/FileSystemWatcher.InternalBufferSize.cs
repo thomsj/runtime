@@ -69,12 +69,12 @@ namespace System.IO.Tests
         [PlatformSpecific(TestPlatforms.Windows)]
         public void FileSystemWatcher_InternalBufferSize_SynchronizingObject()
         {
-            TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
             ManualResetEvent unblockHandler = new ManualResetEvent(false);
             using (var testDirectory = new TempDirectory(GetTestFilePath()))
             using (var file = new TempFile(Path.Combine(testDirectory.Path, "file")))
             using (FileSystemWatcher watcher = CreateWatcher(testDirectory.Path, file.Path, unblockHandler))
             {
+                TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
                 watcher.SynchronizingObject = invoker;
 
                 int internalBufferOperationCapacity = CalculateInternalBufferOperationCapacity(watcher.InternalBufferSize, file.Path);

@@ -86,11 +86,11 @@ namespace System.IO.Tests
         [Fact]
         public void FileSystemWatcher_File_Changed_SynchronizingObject()
         {
-            TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
             using (var testDirectory = new TempDirectory(GetTestFilePath()))
             using (var file = new TempFile(Path.Combine(testDirectory.Path, "file")))
             using (var watcher = new FileSystemWatcher(testDirectory.Path, Path.GetFileName(file.Path)))
             {
+                TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
                 watcher.SynchronizingObject = invoker;
 
                 Action action = () => Directory.SetLastWriteTime(file.Path, DateTime.Now + TimeSpan.FromSeconds(10));

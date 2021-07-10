@@ -66,7 +66,7 @@ namespace System.IO.Tests
         }
 
         [Fact]
-        [PlatformSpecific(TestPlatforms.Windows)]  // Uses P/Invokes
+        [PlatformSpecific(TestPlatforms.Windows)]
         public void FileSystemWatcher_InternalBufferSize_SynchronizingObject()
         {
             TestISynchronizeInvoke invoker = new TestISynchronizeInvoke();
